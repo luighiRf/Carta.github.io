@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para ti, mi amor - Mayckol &amp; Daniela</title>
+    <meta name="description" content="Una experiencia interactiva y mágica dedicada al amor de Mayckol y Daniela.">
+
+    <!-- Fuentes Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    <!-- Estilos Principales -->
+    <link rel="stylesheet" href="assets/css/style.css?v=20261029_v2">
+</head>
+
+<body>
+
+    <!-- FONDO LLUVIA MATRIX (PANTALLA DE ENTRADA) -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- FONDO CORAZONES FLOTANTES (GLOBAL) -->
+    <canvas id="heartsCanvas"></canvas>
+
+    <!-- 1. PANTALLA DE BLOQUEO / ENTRADA ROMÁNTICA -->
+    <div id="unlock-screen" class="glass-panel unlock-card">
+        <div class="unlock-monogram">
+            <span class="monogram-letter">M</span>
+            <span class="monogram-heart">
+                <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Sparkling%20heart/3D/sparkling_heart_3d.png" alt="heart" class="monogram-3d-heart">
+            </span>
+            <span class="monogram-letter">D</span>
+        </div>
+
+        <h1 class="cursive-title unlock-title">Para ti, mi amor</h1>
+        <p class="subtitle unlock-subtitle">Una sorpresa preparada con todo mi corazón</p>
+
+        <div class="fingerprint-wrapper">
+            <div class="fingerprint-pulse-ring"></div>
+            <div class="fingerprint-pulse-ring delay-1"></div>
+            <div class="fingerprint-container" id="unlock-btn" title="Toca para ingresar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="glow-icon pulse">
+                    <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="unlock-action-label">
+            <span class="sparkle-chip">✨ Toca el corazón para comenzar ✨</span>
+        </div>
+
+        <!-- Mensaje sugerencia interactivo -->
+        <div id="unlock-hint" class="unlock-hint">
+            <span class="hint-arrow">
+                <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Sparkles/3D/sparkles_3d.png" alt="sparkles" class="hint-3d-icon">
+            </span>
+            <p>¡Toca el corazón central para descubrir tu regalo y activar la música especial!</p>
+        </div>
+    </div>
+
+    <!-- 2. REPRODUCTOR DE MÚSICA FLOTANTE (MINI ISLAND) -->
+    <div id="floating-music-bar" class="floating-music-bar hidden">
+        <div class="music-pill-inner" id="music-pill-toggle">
+            <div class="mini-vinyl" id="mini-vinyl">
+                <div class="vinyl-grooves"></div>
+                <div class="mini-vinyl-center"></div>
+            </div>
+            <div class="music-info-pill">
+                <span class="music-tag">NUESTRA CANCIÓN</span>
+                <span class="music-title-text" id="floating-track-title">Cuarteto de Nos — Enamorado Tuyo</span>
+            </div>
+            <div class="live-eq-bars" id="live-eq">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <button class="music-mini-btn" id="floating-play-btn" type="button" aria-label="Reproducir o pausar música">
+                <span id="floating-play-icon">▶</span>
+            </button>
+        </div>
+
+        <!-- Panel expandible de control -->
+        <div class="music-expand-panel" id="music-expand-panel">
+            <div class="expand-header">
+                <span class="expand-title">Reproductor Romántico</span>
+                <span class="expand-close" id="expand-close-btn">&times;</span>
+            </div>
+            <div class="expand-song-row">
+                <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Sparkling%20heart/3D/sparkling_heart_3d.png" alt="love" class="expand-song-icon">
+                <div class="expand-song-details">
+                    <strong class="expand-song-name">Enamorado Tuyo</strong>
+                    <span class="expand-artist">Cuarteto de Nos • Para Daniela</span>
+                </div>
+            </div>
+            <div class="expand-progress-row">
+                <span id="expand-time-cur">0:00</span>
+                <input type="range" id="expand-progress-bar" min="0" max="100" value="0" aria-label="Progreso de la música">
+                <span id="expand-time-total">0:00</span>
+            </div>
+            <div class="expand-controls-row">
+                <button class="expand-ctrl-btn" id="expand-prev-btn" title="Reiniciar">⏮</button>
+                <button class="expand-ctrl-btn play-main" id="expand-play-btn" title="Play / Pause">▶</button>
+                <button class="expand-ctrl-btn" id="expand-sound-btn" title="Silenciar / Activar sonido">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CONTENIDO PRINCIPAL UNIFICADO (SINGLE PAGE APPLICATION) -->
+    <main id="main-content" class="hidden">
+
+        <!-- ==========================================
+             TAB 1: INICIO (HERO, CONTADOR Y CORAZÓN 3D)
+             ========================================== -->
+        <section id="tab-inicio" class="tab-content active hero">
+
+            <h1 class="neon-title cursive-title hero-names">
+                Mayckol y Daniela
+            </h1>
+
+            <div class="vip-subtitle-wrapper">
+                <div class="vip-divider"></div>
+                <h2 class="vip-subtitle">
+                    Nuestra historia comenzó el 30.10.2025
+                </h2>
+                <div class="vip-divider"></div>
+            </div>
+
+            <!-- CONTADOR DE AMOR ELEGANTE (CARDS 3D GLOW) -->
+            <div class="countdown-container glass-panel" id="countdown-card">
+                <div class="time-box">
+                    <div class="time-inner-glow"></div>
+                    <span id="days" class="number">00</span>
+                    <span class="label">Días</span>
+                </div>
+                <div class="time-box-separator">:</div>
+                <div class="time-box">
+                    <div class="time-inner-glow"></div>
+                    <span id="hours" class="number">00</span>
+                    <span class="label">Horas</span>
+                </div>
+                <div class="time-box-separator">:</div>
+                <div class="time-box">
+                    <div class="time-inner-glow"></div>
+                    <span id="minutes" class="number">00</span>
+                    <span class="label">Minutos</span>
+                </div>
+                <div class="time-box-separator">:</div>
+                <div class="time-box">
+                    <div class="time-inner-glow"></div>
+                    <span id="seconds" class="number">00</span>
+                    <span class="label">Segundos</span>
+                </div>
+            </div>
+
+            <!-- INFINITO CELESTIAL CON ESTRELLA ORBITANTE -->
+            <div class="infinity-wrapper">
+                <svg class="vip-svg-decoration" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="vip-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#ffc3a0" />
+                            <stop offset="50%" stop-color="#ff85a2" />
+                            <stop offset="100%" stop-color="#ffafbd" />
+                        </linearGradient>
+                        <filter id="neon-glow-svg" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3.5" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    <path id="infinity-path" d="M 100,50
+                        C 70,10 30,10 30,50
+                        C 30,90 70,90 100,50
+                        C 130,10 170,10 170,50
+                        C 170,90 130,90 100,50 Z" fill="none" stroke="url(#vip-glow)" stroke-width="2.5"
+                        filter="url(#neon-glow-svg)" class="draw-animation" />
+
+                    <circle cx="100" cy="50" r="2.5" fill="#ffffff" filter="url(#neon-glow-svg)" class="pulse-star"
+                        style="transform-origin: 100px 50px;" />
+
+                    <text x="100" y="94" fill="url(#vip-glow)" text-anchor="middle" font-family="'Cinzel', serif"
+                        font-size="9" letter-spacing="4" class="infinity-text">
+                        UN AMOR SIN FINAL
+                    </text>
+                </svg>
+            </div>
+
+            <!-- CORAZON 3D (THREE.JS PARTICLES) -->
+            <div class="heart-animation-container">
+                <div id="heartCanvas"></div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 2: UNIVERSO (GALAXIA 3D Y CONSTELACIONES)
+             ========================================== -->
+        <section id="tab-universo" class="tab-content galaxy-section">
+            <div class="galaxy-titles">
+                <h2 class="neon-title cursive-title galaxy-main-title">
+                    Nuestro Universo
+                </h2>
+                <p class="galaxy-subtitle">
+                    Toca las estrellas o palabras en órbita para descubrir un mensaje secreto...
+                </p>
+            </div>
+
+            <div class="galaxy-container" id="galaxy-container">
+                <canvas id="galaxyThreeCanvas"></canvas>
+                <div id="galaxy-nodes-layer" class="galaxy-nodes-layer"></div>
+            </div>
+
+            <!-- Botón interactivo: Pedir un deseo -->
+            <button id="btn-pedir-deseo" class="wish-button" type="button" title="Pedir un deseo al universo">
+                <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Glowing%20star/3D/glowing_star_3d.png" alt="star" class="wish-3d-star">
+                <span class="wish-text">Pedir un deseo a las estrellas</span>
+            </button>
+
+            <!-- Modal para mensajes del universo -->
+            <div id="galaxyModal" class="galaxy-modal" onclick="if(event.target===this) closeGalaxyModal()">
+                <div class="modal-content glass-panel">
+                    <button class="close-btn" type="button" onclick="closeGalaxyModal()" aria-label="Cerrar modal">&times;</button>
+                    <div class="modal-heart-wrap">
+                        <img id="modal-icon-img" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Sparkling%20heart/3D/sparkling_heart_3d.png" alt="heart" class="modal-3d-heart">
+                    </div>
+                    <div class="modal-category" id="modal-category">MENSAJE CELESTIAL</div>
+                    <h3 class="modal-title" id="modal-title">Para Daniela</h3>
+                    <p id="modal-text"></p>
+                    <div class="modal-actions-row">
+                        <button class="modal-heart-btn" type="button" onclick="handleSaveMessage()">
+                            <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Red%20heart/3D/red_heart_3d.png" alt="heart" class="btn-tiny-heart">
+                            Guardar en mi corazón
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 3: RAZONES (3D COVERFLOW & AUDIO BESPOKE)
+             ========================================== -->
+        <section id="tab-razones" class="tab-content">
+            <canvas id="bg-canvas-razones"></canvas>
+
+            <div class="love-reasons-section">
+                <div class="love-reasons-wrapper glass-panel">
+                    <div class="love-reasons-header">
+                        <h2>Por qué te amo</h2>
+                        <p>Desliza entre las cartas y toca cada una para revelarla</p>
+                    </div>
+
+                    <!-- Swiper Carousel 3D -->
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper" id="reasons-swiper-wrapper">
+                            <!-- Inyectado dinámicamente con JS -->
+                        </div>
+                        <div class="swiper-pagination"></div>
+                        <div class="swiper-button-next" title="Siguiente"></div>
+                        <div class="swiper-button-prev" title="Anterior"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 4: CARTA (PERGAMINO ROMÁNTICO REALISTA)
+             ========================================== -->
+        <section id="tab-carta" class="tab-content carta-section">
+            <div class="carta-header">
+                <h2 class="neon-title cursive-title carta-main-title">Una carta para ti</h2>
+                <p>Escrito palabra por palabra desde lo más profundo de mi corazón ✨</p>
+            </div>
+
+            <!-- HOJA PERGAMINO ELEGANTE CON SELLO DE CERA -->
+            <div class="paper-envelope-card" id="paper-envelope-card">
+                <!-- Sello de cera interactivo -->
+                <div class="wax-seal" id="wax-seal-btn" title="Toca el sello para abrir la carta">
+                    <div class="wax-seal-inner">
+                        <span class="wax-monogram">M ♡ D</span>
+                    </div>
+                    <div class="wax-ribbon-left"></div>
+                    <div class="wax-ribbon-right"></div>
+                </div>
+
+                <div class="paper-sheet" id="paper-sheet">
+                    <div class="paper-decor-corner top-left"></div>
+                    <div class="paper-decor-corner top-right"></div>
+                    <div class="paper-decor-corner bottom-left"></div>
+                    <div class="paper-decor-corner bottom-right"></div>
+
+                    <div class="paper-header-row">
+                        <span class="paper-date-stamp">30 de Octubre • 1 Año Juntos</span>
+                        <span class="paper-to-stamp">Para: Mi Niña Hermosa ❤️</span>
+                    </div>
+
+                    <div class="paper-lines">
+                        <p class="paper-text" id="carta-text"></p>
+                    </div>
+
+                    <div class="paper-signature">
+                        <span>Con todo mi amor eterno,</span>
+                        <strong class="sig-name">Mayckol ❤️</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             DOCK DE NAVEGACIÓN INFERIOR (APPLE LIQUID GLASS)
+             ========================================== -->
+        <nav class="bottom-nav" id="bottom-dock">
+            <div class="dock-indicator" id="dock-indicator"></div>
+
+            <button class="nav-btn active" data-target="tab-inicio" type="button" aria-label="Ir a Inicio">
+                <span class="nav-icon-wrap">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Sparkles/3D/sparkles_3d.png" alt="Inicio" class="nav-3d-emoji">
+                </span>
+                <span class="nav-label">Inicio</span>
+            </button>
+
+            <button class="nav-btn" data-target="tab-universo" type="button" aria-label="Ir a Universo">
+                <span class="nav-icon-wrap">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Ringed%20planet/3D/ringed_planet_3d.png" alt="Universo" class="nav-3d-emoji">
+                </span>
+                <span class="nav-label">Universo</span>
+            </button>
+
+            <button class="nav-btn" data-target="tab-razones" type="button" aria-label="Ir a Razones">
+                <span class="nav-icon-wrap">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Sparkling%20heart/3D/sparkling_heart_3d.png" alt="Razones" class="nav-3d-emoji">
+                </span>
+                <span class="nav-label">Razones</span>
+            </button>
+
+            <button class="nav-btn" data-target="tab-carta" type="button" aria-label="Ir a Carta">
+                <span class="nav-icon-wrap">
+                    <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji/assets/Love%20letter/3D/love_letter_3d.png" alt="Carta" class="nav-3d-emoji">
+                </span>
+                <span class="nav-label">Carta</span>
+            </button>
+        </nav>
+    </main>
+
+    <!-- TOAST NOTIFICACIÓN FLOTANTE -->
+    <div id="toast-notification" class="toast-notification"></div>
+
+    <!-- LIBRERÍAS EXTERNAS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js"></script>
+
+    <!-- SCRIPT UNIFICADO PRINCIPAL -->
+    <script src="assets/js/app.js?v=20261029_v2"></script>
+</body>
+
+</html>
